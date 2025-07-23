@@ -18,13 +18,13 @@ class Program
         return Regex.Replace(description.Trim(), @"[ \t]*\n[ \t]*(\n[ \t]*)*", "\n");
     }
 
-    public static string regexMatcher(string input, string pattern)
+    public static string regexMatcher(string input, string pattern,string fallback)
     {
         Match match = Regex.Match(input, pattern);
         if (match.Success)
             return match.Value.Trim();
         else
-            return "0";
+            return fallback;
     }
 
     public static void Main(string[] args)
@@ -51,17 +51,17 @@ class Program
             #region Button Link and LotCount Extraction
             HtmlNode viewBtn = getElementByXPath($".//div[@class='{className}btns']//a[@href]", item);
             auction.Link = viewBtn.Attributes["href"]?.Value;
-            auction.LotCount = int.Parse(regexMatcher(viewBtn.InnerText, @"\d+"));
+            auction.LotCount = int.Parse(regexMatcher(viewBtn.InnerText, @"\d+","0"));
             #endregion
 
             className = "auction-date-location";
 
             #region Description,Location Extraction
             auction.Description = descriptionFormatter(getElementByXPath($".//div[@class='{className}']", item).InnerText);
-            auction.Location = regexMatcher(auction.Description, @"\n.*$");
+            auction.Location = regexMatcher(auction.Description, @"\n.*$","");
             #endregion
 
-            string dataTime = regexMatcher(auction.Description, @"^.*\r?\n");
+            string dataTime = regexMatcher(auction.Description, @"^.*\r?\n","");
 
             #region Date Extraction
             MatchCollection dateRegex = Regex.Matches(dataTime, @"\b\d{1,2}\b");
@@ -75,7 +75,7 @@ class Program
             #endregion
 
             #region year Extracted
-            auction.StartYear = auction.EndYear = int.Parse(regexMatcher(dataTime, @"\d{4}"));
+            auction.StartYear = auction.EndYear = int.Parse(regexMatcher(dataTime, @"\d{4}","0"));
             #endregion
 
             #region Month Extraction
